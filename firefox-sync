@@ -1,0 +1,76 @@
+#!/usr/bin/ksh
+
+set_env() {
+	IFS=
+	set -efu
+	case $(uname) in
+	Linux)
+		env=$(uname)
+		firefox_cache_dir=~/.cache/mozilla/firefox
+		firefox_home_dir=~/.mozilla/firefox
+		profile_string=lrf0nnno.default
+		profile_shm=/dev/shm/$USER-firefox-profile-$profile_string
+		cache_shm=/dev/shm/$USER-firefox-cache-$profile_string ;;
+	Darwin)
+		env=$(uname)
+		firefox_cache_dir=~/Library/Caches/Firefox/Profiles
+		firefox_home_dir=~/Library/Application\ Support/Firefox/Profiles
+		profile_string=xp3nijol.default
+		profile_shm=/Volumes/$USER-firefox-ramdisk/$profile_string-profile
+		cache_shm=/Volumes/$USER-firefox-ramdisk/$profile_string-cache ;;
+	esac
+	profile_liv="$firefox_home_dir/$profile_string"
+	profile_bak="$firefox_home_dir/$profile_string.bak"
+	cache_liv="$firefox_cache_dir/$profile_string"
+	cache_bak="$firefox_cache_dir/$profile_string.bak"
+}
+
+check_dirs() {
+	for xdir_liv in "$profile_liv" "$cache_liv"; do
+		case "$xdir_liv" in
+			"$profile_liv")
+				xdir_shm="$profile_shm"
+				xdir_bak="$profile_bak" ;;
+			"$cache_liv")
+				xdir_shm="$cache_shm"
+				xdir_bak="$cache_bak" ;;
+		esac
+	#[ -d "$xdir_liv" ]
+	if [ ! -L $xdir_liv ]; then
+		case $env in
+			Linux)
+				mkdir -m 0700 $xdir_shm ;;
+			Darwin)
+				block_dev=$(hdiutil attach -nomount -owners on ram://2048000|sed 's/[[:blank:]]*$//')
+				diskutil eraseVolume HFS+ $USER-firefox-ramdisk ${block_dev} ;;
+		esac
+		mv $xdir_liv $xdir_bak
+		ln -s "$xdir_shm" "$xdir_liv"
+	fi
+	done
+}
+
+backup_shm_dirs() {
+	[ -d $profile_liv ] && [ -d $profile_bak ] && [ -L $profile_liv ]
+	rsync -a --delete --exclude .unpacked $profile_liv/ $profile_bak/
+	[ -d $cache_liv ] && [ -d $cache_bak ] && [ -L $cache_liv ]
+	rsync -a --delete --exclude .unpacked $cache_liv/ $cache_bak/
+}
+
+#
+#-=#=--=#=--=#=--=#=--=#=--=#=-#   begin program   #-=#=--=#=--=#=--=#=--=#
+#
+
+set_env
+
+#if [ $(pgrep -lx firefox|cut -d" " -f2) == firefox ]; then
+#	backup_shm_dirs
+
+if [ -e "$profile_liv"/.unpacked ]; then
+	check_dirs
+	backup_shm_dirs
+else
+	check_dirs
+	rsync -a "$profile_bak"/ "$profile_liv"/
+	touch "$profile_liv"/.unpacked
+fi
