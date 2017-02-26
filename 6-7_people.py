@@ -1,12 +1,12 @@
 #!/usr/bin/python
 people = {
-	'anais' : {
+	'x' : {
 	  	'first_name': 'x',
   		'last_name': 'x',
   		'age': 'x',
 		'city': 'x',
 		},
-	'chris' : {
+	'x' : {
 		'first_name': 'x',
 		'last_name': 'x',
 		'age': 'x',
