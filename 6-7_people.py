@@ -1,16 +1,16 @@
 #!/usr/bin/python
 people = {
 	'anais' : {
-	  	'first_name': 'Anais',
-  		'last_name': 'van Delft',
-  		'age': '35',
-		'city': 'Kleve',
+	  	'first_name': 'x',
+  		'last_name': 'x',
+  		'age': 'x',
+		'city': 'x',
 		},
 	'chris' : {
-		'first_name': 'Chris',
-		'last_name': 'Kirkpatrick',
-		'age': '34',
-		'city': 'Kleve',
+		'first_name': 'x',
+		'last_name': 'x',
+		'age': 'x',
+		'city': 'x',
 		},
 	'will' : {
 		'first_name': 'William',
